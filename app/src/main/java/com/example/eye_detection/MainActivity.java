@@ -25,6 +25,8 @@ import org.opencv.android.Utils;
 import org.opencv.core.CvException;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.Point;
+import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
@@ -37,7 +39,7 @@ import java.io.IOException;
 public class MainActivity extends AppCompatActivity {
 
     private Button btnCamara;
-    private ImageView imgView;
+    private ImageView imgView ,imgView2;
     private static String TAG = "MainActivity";
     static {
         if(OpenCVLoader.initDebug()){
@@ -124,6 +126,7 @@ public class MainActivity extends AppCompatActivity {
         /* ----------------------------------------------------*/
         btnCamara = findViewById(R.id.btnCamara);
         imgView = findViewById(R.id.imageView);
+        imgView2 = findViewById(R.id.imageView3);
 
         btnCamara.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -155,15 +158,33 @@ public class MainActivity extends AppCompatActivity {
 
             Mat matInput = convertBiMapMat(imgBitmap);
             Mat matoutput = new Mat (matInput.rows(),matInput.cols(),CvType.CV_8UC3);
-            LandmarkDetection(matInput.getNativeObjAddr(),matoutput.getNativeObjAddr());
+            long points[] = LandmarkDetection(matInput.getNativeObjAddr(),matoutput.getNativeObjAddr());
+            String msg = "";
+            for (int i  =0 ; i< points.length; i++){
+                msg += "Punto "+ i + " "+points[i] ;
+            }
+            Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+            long p1_x = points[0]-5;
+            long p1_y = points[6];
 
+            long p2_x = points[15]+5;
+            long p2_y = points[21];
+            Rect rect = new Rect(new Point((int)p1_x,(int)p1_y),new Point((int)p2_x,(int)p2_y));
+            Mat img = cutImage(matInput,rect);
+            imgView2.setImageBitmap(convertMat2Bitmap(img));
             imgView.setImageBitmap(convertMat2Bitmap(matoutput));
-            Toast.makeText(this,"Termina proceso", Toast.LENGTH_SHORT).show();
+            //imgView.setImageBitmap(points);
+            //Toast.makeText(this,"Termina proceso", Toast.LENGTH_SHORT).show();
             //imgView.setImageBitmap(convertMat2Bitmap(convertBiMapMat(imgBitmap)));
             ////////////////////////////////////
         }
     }
-
+    Mat cutImage(Mat src, Rect rec){
+        Mat src_io = new Mat(src,rec);
+        Mat cutImage = new Mat();
+        src_io.copyTo(cutImage);
+        return cutImage;
+    }
     // convert java Bitmap into Opencv Mat
     Mat convertBiMapMat(Bitmap rgbImage){
         Mat rgbaMat = new Mat(rgbImage.getHeight(),rgbImage.getWidth(), CvType.CV_8UC4);
@@ -219,5 +240,5 @@ public class MainActivity extends AppCompatActivity {
      * A native method that is implemented by the 'eye_detection' native library,
      * which is packaged with this application.
      */
-    public native void LandmarkDetection(long addrInput,long addrOutput);
+    public native long[] LandmarkDetection(long addrInput,long addrOutput);
 }
