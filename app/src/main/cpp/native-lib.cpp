@@ -2,7 +2,7 @@
 #include <string>
 #include <opencv2/core.hpp>
 #include <dlib/image_processing/frontal_face_detector.h>
-
+#include "omp.h"
 #include <dlib/image_processing/shape_predictor.h>
 #include <dlib/opencv/cv_image.h>
 #include <opencv2/imgproc.hpp>
@@ -49,7 +49,7 @@ void faceDetectionDlib(cv::Mat& img,cv::Mat& dst, long *list_eyes) {
         std::vector<dlib::rectangle> faces = detector(cimg);
         //find pose
         std::vector<dlib::full_object_detection> shapes;
-
+        #pragma  omp parallel for
         for (unsigned long i = 0; i < faces.size(); ++i) {
             shapes.push_back(pose_model(cimg, faces[i]));
         }
