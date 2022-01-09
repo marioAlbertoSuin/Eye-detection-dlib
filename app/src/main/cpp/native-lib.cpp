@@ -68,6 +68,7 @@ void rendertoMat(std::vector<dlib::full_object_detection>& dets, cv::Mat& dst, l
     int sz=3;
     color = cv::Scalar(0,255,0);
     //chin line
+    #pragma  omp parallel for
     for(unsigned long idx=0;idx< dets.size();idx++){
         //left eye
         for(unsigned long i=37;i<42;++i){
@@ -76,6 +77,7 @@ void rendertoMat(std::vector<dlib::full_object_detection>& dets, cv::Mat& dst, l
             list_eyes[i-37+6] = dets[idx].part(i).y();
         }
         //right eye
+        #pragma  omp parallel for
         for(unsigned long i=43;i<48;++i){
             cv::line(dst,cv::Point(dets[idx].part(i).x(),dets[idx].part(i).y()),cv::Point(dets[idx].part(i-1).x(),dets[idx].part(i-1).y()),color,sz);
             list_eyes[i-43+12] = dets[idx].part(i).x();
